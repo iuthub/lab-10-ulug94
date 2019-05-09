@@ -17,6 +17,7 @@
             </p>
             <p>{{ $post->content }}!</p>
             <p><a href="{{ route('blog.post', ['id' => $post->id]) }}">Read more...</a></p>
+            <p><strong>By {{$post->user->name}}</strong></p>
         </div>
     </div>
     <hr>

@@ -8,7 +8,6 @@ use App\Tag;
 use Illuminate\Http\Request;
 use Auth;
 use Gate;
-
 class PostController extends Controller
 {
     public function getIndex()
@@ -19,7 +18,7 @@ class PostController extends Controller
 
     public function getAdminIndex()
     {
-        $posts = Post::orderBy('title', 'asc')->get();
+        $posts = Auth::user()->posts;
         return view('admin.index', ['posts' => $posts]);
     }
 
@@ -60,7 +59,7 @@ class PostController extends Controller
             'title' => $request->input('title'),
             'content' => $request->input('content')
         ]);
-        $post->save();
+        Auth::user()->posts()->save($post);
         $post->tags()->attach($request->input('tags') === null ? [] : $request->input('tags'));
 
         return redirect()->route('admin.index')->with('info', 'Post created, Title is: ' . $request->input('title'));
@@ -73,13 +72,12 @@ class PostController extends Controller
             'content' => 'required|min:10'
         ]);
         $post = Post::find($request->input('id'));
-        if(Gate::denies('update -post', $post)){
+        if(Gate::denies('update-post',$post)){
             return redirect()->back();
         }
         $post->title = $request->input('title');
         $post->content = $request->input('content');
-        Auth::user()->posts()->save($post);
-
+        $post->save();
 //        $post->tags()->detach();
 //        $post->tags()->attach($request->input('tags') === null ? [] : $request->input('tags'));
         $post->tags()->sync($request->input('tags') === null ? [] : $request->input('tags'));
